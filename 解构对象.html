@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        // 基本赋值
+        var o = {
+            p: 42,
+            q: true
+        };
+        var {
+            p,
+            q
+        } = o;
+        console.log(p); // 42
+        console.log(q); // true
+
+
+        /* 无声明赋值
+        通过解构可以无需声明来赋值一个变量。 */
+        var a, b;
+        ({
+            a,
+            b
+        } = {
+            a: 1,
+            b: 2
+        });
+        /* 赋值语句周围的(...) 是使用对象字面解构赋值时不需要声明的语法。 
+        {a,b} = {a: 1,b: 2}不是有效的独立语法， 因为左边的 {a,b}被认为是一个块而不是对象字面量。
+        然而，({a,b} = {a: 1,b: 2}) 是有效的， 正如var {a,b} = {a: 1,b: 2}
+        注意： 你的(...) 表达式需要一个分号在它前面， 否则它也许会被当成上一行中的函数来执行。 */
+
+
+        /* 给新的变量名赋值
+        可以从一个对象中提取变量并赋值给和对象属性名不同的新的变量名。 */
+        var o = {
+            p: 42,
+            q: true
+        };
+        var {
+            p: foo,
+            q: bar
+        } = o;
+        console.log(foo); // 42 
+        console.log(bar); // true
+
+
+        /* 默认值
+        变量可以先赋予默认值。当要提取的对象没有对应的属性，变量就被赋予默认值。*/
+        var {
+            a = 10, b = 5
+        } = {
+            a: 3
+        };
+        console.log(a); // 3
+        console.log(b); // 5
+
+
+        /* 给新的变量命名并提供默认值
+        一个属性可以是
+        1） 从一个对象解构， 并分配给一个不同名称的变量， 
+        2） 分配一个默认值， 以防未解构的值是undefined。 */
+        var {
+            a: aa = 10,
+            b: bb = 5
+        } = {
+            a: 3
+        };
+        console.log(aa); // 3
+        console.log(bb); // 5
+
+
+        // 函数参数默认值
+        // ES5版本
+        function drawES5Chart(options) {
+            options = options === undefined ? {} : options;
+            var size = options.size === undefined ? 'big' : options.size;
+            var cords = options.cords === undefined ? {
+                x: 0,
+                y: 0
+            } : options.cords;
+            var radius = options.radius === undefined ? 25 : options.radius;
+            console.log(size, cords, radius);
+            // now finally do some chart drawing
+        }
+        drawES5Chart({
+            cords: {
+                x: 18,
+                y: 30
+            },
+            radius: 30
+        });
+
+
+        // ES2015版本
+        function drawES2015Chart({
+            size = 'big',
+            cords = {
+                x: 0,
+                y: 0
+            },
+            radius = 25
+        } = {}) {
+            console.log(size, cords, radius);
+            // do some chart drawing
+        }
+        drawES2015Chart({
+            cords: {
+                x: 18,
+                y: 30
+            },
+            radius: 30
+        });
+        /* 在上面的drawES2015Chart的函数签名中， 
+        解构的左手边被分配给右手边的空对象字面值： 
+        {size = 'big', cords = {x: 0,y: 0}, radius = 25} = {}。
+        你也可以在没有右侧分配的情况下编写函数。 
+        但是， 如果你忽略了右边的赋值， 
+        那么函数会在被调用的时候查找至少一个被提供的参数， 
+        而在当前的形式下， 你可以直接调用drawES2015Chart() 而不提供任何参数。 
+        如果你希望能够在不提供任何参数的情况下调用该函数， 
+        则当前的设计非常有用， 而另一种方法在您确保将对象传递给函数时非常有用。*/
+
+
+        // 解构嵌套对象和数组
+        var metadata = {
+            title: "Scratchpad",
+            translations: [{
+                locale: "de",
+                localization_tags: [],
+                last_edit: "2014-04-14T08:43:37",
+                url: "/de/docs/Tools/Scratchpad",
+                title: "JavaScript-Umgebung"
+            }],
+            url: "/en-US/docs/Tools/Scratchpad"
+        };
+        var {
+            title: englishTitle,
+            translations: [{
+                title: localeTitle
+            }]
+        } = metadata;
+        console.log(englishTitle); // "Scratchpad"
+        console.log(localeTitle); // "JavaScript-Umgebung"
+
+
+        // For of 迭代和解构
+        var people = [{
+            name: "Mike Smith",
+            family: {
+                mother: "Jane Smith",
+                father: "Harry Smith",
+                sister: "Samantha Smith"
+            },
+            age: 35
+        }, {
+            name: "Tom Jones",
+            family: {
+                mother: "Norah Jones",
+                father: "Richard Jones",
+                brother: "Howard Jones"
+            },
+            age: 25
+        }];
+        for (var {
+                name: n,
+                family: {
+                    father: f
+                }
+            }
+            of people) {
+            console.log("Name: " + n + ", Father: " + f);
+        }
+        // "Name: Mike Smith, Father: Harry Smith"
+        // "Name: Tom Jones, Father: Richard Jones"
+
+
+        // 从作为函数实参的对象中提取数据
+        function userId({
+            id
+        }) {
+            return id;
+        }
+
+        function whois({
+            displayName: displayName,
+            fullName: {
+                firstName: name
+            }
+        }) {
+            console.log(displayName + " is " + name);
+        }
+        var user = {
+            id: 42,
+            displayName: "jdoe",
+            fullName: {
+                firstName: "John",
+                lastName: "Doe"
+            }
+        };
+        console.log("userId: " + userId(user)); // "userId: 42"
+        whois(user); // "jdoe is John"
+        // 这段代码从user对象中提取并输出id、 displayName和firstName。
+
+
+        /* 对象属性计算名和解构
+        计算属性名， 如object literals， 可以被解构。 */
+        let key = "z";
+        let {
+            [key]: foo1
+        } = {
+            z: "bar"
+        };
+        console.log(foo1); // "bar"
+
+
+        /* 对象解构中的Rest
+        Rest / Spread Properties
+        for ECMAScript 提案（ 阶段3） 将rest语法添加到解构中。 
+        Rest 属性收集尚未被解构模式拾取的剩余可枚举属性键。 */
+        let {
+            a1,
+            b1,
+            ...rest
+        } = {
+            a1: 10,
+            b1: 20,
+            c: 30,
+            d: 40
+        }
+        a1; // 10 
+        b1; // 20 
+        rest; // { c: 30, d: 40 }
+
+
+        /* 无效的 JavaScript 标识符作为属性名称
+        通过提供有效的替代标识符， 解构可以与不是有效的JavaScript标识符的属性名称一起使用。*/
+        const foo2 = {
+            'fizz-buzz': true
+        };
+        const {
+            'fizz-buzz': fizzBuzz
+        } = foo2;
+        console.log(fizzBuzz); // "true"
+    </script>
+</body>
+
+</html>

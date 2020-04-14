@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>解构数组</title>
+</head>
+
+<body>
+    <script>
+        // 变量声明并赋值时的解构
+        var foo = ["one", "two", "three"];
+        var [one, two, three] = foo;
+        console.log(one); // "one"
+        console.log(two); // "two"
+        console.log(three); // "three"
+
+        /* 
+        变量先声明后赋值时的解构
+        通过解构分离变量的声明， 可以为一个变量赋值。 */
+        var a, b;
+        [a, b] = [1, 2];
+        console.log(a); // 1
+        console.log(b); // 2
+
+        /* 默认值
+        为了防止从数组中取出一个值为undefined的对象， 可以为这个对象设置默认值。 */
+        var a, b;
+        [a = 5, b = 7] = [1];
+        console.log(a); // 1
+        console.log(b); // 7
+
+        /* 交换变量
+        在一个解构表达式中可以交换两个变量的值。
+        没有解构赋值的情况下， 交换两个变量需要一个临时变量（ 或者用低级语言中的XOR - swap技巧）。 */
+        var a = 1;
+        var b = 3;
+        [a, b] = [b, a];
+        console.log(a); // 3
+        console.log(b); // 1
+
+        /* 解析一个从函数返回的数组
+        从一个函数返回一个数组是十分常见的情况.。解构使得处理返回值为数组时更加方便。
+        在下面例子中，[1, 2] 作为函数的 f() 的输出值， 可以使用解构用一句话完成解析。 */
+        function f() {
+            return [1, 2];
+        }
+
+        var a, b;
+        [a, b] = f();
+        console.log(a); // 1
+        console.log(b); // 2
+
+        /* 忽略某些返回值
+        你也可以忽略你不感兴趣的返回值： */
+        function f() {
+            return [1, 2, 3];
+        }
+        var [a, , b] = f();
+        console.log(a); // 1
+        console.log(b); // 3
+        // 你也可以忽略全部返回值。 例如：
+        [, , ] = f();
+
+        /* 将剩余数组赋值给一个变量
+        当解构一个数组时， 可以使用剩余模式， 将数组剩余部分赋值给一个变量。 */
+        var [a, ...b] = [1, 2, 3];
+        console.log(a); // 1
+        console.log(b); // [2, 3]
+
+        // 注意： 如果剩余元素右侧有一个逗号， 会抛出SyntaxError， 因为剩余元素必须是数组的最后一个元素。
+        // var [a, ...b, ] = [1, 2, 3];
+        // SyntaxError: rest element may not have a trailing comma
+
+        /* 用正则表达式匹配提取值
+        用正则表达式方法exec() 匹配字符串会返回一个数组， 该数组第一个值是完全匹配正则表达式的字符串， 然后的值是匹配正则表达式括号内内容部分。 解构赋值允许你轻易地提取出需要的部分， 忽略完全匹配的字符串—— 如果不需要的话。 */
+        var url = "https://developer.mozilla.org/en-US/Web/JavaScript";
+        var parsedURL = /^(\w+)\:\/\/([^\/]+)\/(.*)$/.exec(url);
+        console.log(parsedURL); // ["https://developer.mozilla.org/en-US/Web/JavaScript", "https", "developer.mozilla.org", "en-US/Web/JavaScript"]
+        var [, protocol, fullhost, fullpath] = parsedURL;
+        console.log(protocol); // "https"
+    </script>
+</body>
+
+</html>

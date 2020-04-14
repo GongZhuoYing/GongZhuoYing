@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        // 一个 Proxy 对象由两个部分组成： target、 handler。
+        // 在通过 Proxy 构造函数生成实例对象时， 需要提供这两个参数。
+        // target 即目标对象， handler 是一个对象， 声明了代理 target 的指定行为。
+
+        let target0 = {
+            name: 'Tom',
+            age: 24
+        };
+        let handler = {
+            get: function(target, key) {
+                console.log('getting ' + key);
+                return target[key]; // 不是target.key
+            },
+            set: function(target, key, value) {
+                console.log('setting ' + key);
+                // target[key] = value;
+                console.log(target[key]);
+            }
+        };
+        let proxy = new Proxy(target0, handler);
+        proxy.name; // 实际执行 handler.get
+        proxy.age; // 实际执行 handler.get
+        proxy.name = "Jason"; // 实际执行 handler.set
+        proxy.age = 25; // 实际执行 handler.set
+        console.log(proxy.age);
+
+        // target 可以为空对象
+        let targetEpt = {};
+        let proxyEpt = new Proxy(targetEpt, handler);
+        console.log(proxyEpt);
+        // 调用 get 方法，此时目标对象为空，没有 name 属性
+        proxyEpt.name;
+        console.log(proxyEpt.name); // getting name
+        // 调用 set 方法，向目标对象中添加了 name 属性
+        proxyEpt.name = 'Tom';
+        // setting name
+        // "Tom"
+        // 再次调用 get ，此时已经存在 name 属性
+        console.log(proxyEpt.name); // "Tom"
+        // getting name
+
+
+        // 通过构造函数新建实例时其实是对目标对象进行了浅拷贝，因此目标对象与代理对象会互相
+        // 影响
+        console.log(targetEpt); // {name: "Tom"}
+
+        // handler 对象也可以为空，相当于不设置拦截操作，直接访问目标对象
+        let targetEmpty = {};
+        let proxyEmpty = new Proxy(targetEmpty, {});
+        proxyEmpty.name = "Tim";
+        console.log(targetEmpty); // {name: "Tim"}
+
+
+
+        // 实例方法
+        // get(target, propKey, receiver)
+
+        // 用于 target 对象上 propKey 的读取操作。
+        let exam = {
+            name: "Tham",
+            age: 24
+        };
+        let proxy0 = new Proxy(exam, {
+            get(target, propKey, receiver) {
+                console.log('Getting ' + propKey); // Getting name
+                return target[propKey];
+            }
+        });
+        proxy0.name;
+        // "Tham"
+
+        // get() 方法可以继承。
+        let proxy1 = new Proxy({}, {
+            get(target, propKey, receiver) {
+                // 实现私有属性读取保护
+                if (propKey[0] === 'n') {
+                    throw new Erro(`Invalid attempt to get private     "${propKey}"`);
+                }
+                console.log('Getting ' + propKey);
+                return target[propKey];
+            }
+        });
+
+        let obj = Object.create(proxy1);
+        obj.vame;
+        // Getting name
+
+
+        // set(target, propKey, value, receiver)
+        /* 用于拦截 target 对象上的 propKey 的赋值操作。 
+        如果目标对象自身的某个属性， 不可写且不可配置， 那么set方法将不起作用。 */
+        let validator = {
+            set: function(obj, prop, value) {
+                if (prop === 'age') {
+                    if (!Number.isInteger(value)) {
+                        // throw new TypeError('The age is not an integer');
+                    }
+                    if (value > 200) {
+                        // throw new RangeError('The age seems invalid');
+                    }
+                }
+                // 对于满足条件的 age 属性以及其他属性，直接保存
+                obj[prop] = value;
+            }
+        };
+        let proxy2 = new Proxy({}, validator);
+        proxy2.age = 100;
+        console.log(proxy2.age); // 100
+        proxy2.age = 'oppps'; // 报错
+        proxy2.age = 300; // 报错
+
+        // 第四个参数 receiver 表示原始操作行为所在对象， 一般是 Proxy 实例本身。
+        const handler1 = {
+            set: function(obj, prop, value, receiver) {
+                obj[prop] = receiver;
+            }
+        };
+        const proxy3 = new Proxy({}, handler1);
+        proxy3.name = 'Tom';
+        console.log(proxy3);
+        console.log(proxy3.name);
+        console.log(proxy3.name === proxy3); // true
+        proxy3.age = '11';
+        console.log(proxy3);
+        console.log(proxy3.age);
+        console.log(proxy3.age === proxy3);
+
+        const exam1 = {};
+        Object.setPrototypeOf(exam1, proxy3);
+        exam1.name = "Sam";
+        console.log(exam1.name === exam1); // true
+        // 注意， 严格模式下， set代理如果没有返回true， 就会报错。
+
+
+        // apply(target, ctx, args)
+        /* 用于拦截函数的调用、 call 和 reply 操作。 
+        target 表示目标对象， 
+        ctx 表示目标对象上下文， 
+        args 表示目标对象的参数数组。 */
+        function sub(a, b) {
+            return a - b;
+        }
+        let handler2 = {
+            apply: function(target, ctx, args) {
+                console.log('handle apply');
+                // return Reflect.apply(...arguments);
+                return 5;
+            }
+        };
+        let proxy4 = new Proxy(sub, handler2);
+        console.log(proxy4.call(2, 1));
+        // handle apply
+        // 1
+
+
+        // has(target, propKey)
+        /* 用于拦截 HasProperty 操作，
+        即在判断 target 对象是否存在 propKey 属性时， 会被这个方法拦截。 
+        此方法不判断一个属性是对象自身的属性， 还是继承的属性。 */
+        let handler3 = {
+            has: function(target, propKey) {
+                console.log("handle has");
+                return propKey in target;
+            }
+        };
+        let exam2 = {
+            name: "Tom"
+        };
+        let proxy5 = new Proxy(exam2, handler3);
+        console.log('name' in proxy5);
+        // handle has
+        // true
+        // 注意： 此方法不拦截for...in 循环。
+
+        /* construct(target, args)
+        用于拦截 new 命令。 返回值必须为对象。 */
+        let handler4 = {
+            construct: function(target, args, newTarget) {
+                console.log("handle construct");
+                return Reflect.construct(target, args, newTarget);
+            }
+        };
+        class exam3 {
+            constructor(name) {
+                this.name = name;
+            }
+        };
+        let proxy6 = new Proxy(exam3, handler4);
+        new proxy6("Tom");
+        // handle construct
+        // exam {name: "Tom"}
+
+
+        /* deleteProperty(target, propKey)
+        用于拦截 delete 操作， 
+        如果这个方法抛出错误或者返回 false， 
+        propKey 属性就无法被 delete 命令删除。 */
+
+        /* defineProperty(target, propKey, propDesc)
+        用于拦截 Object.definePro若目标对象不可扩展， 
+        增加目标对象上不存在的属性会报错； 
+        若属性不可写或不可配置， 则不能改变这些属性。 */
+        let handler5 = {
+            defineProperty: function(target, propKey, propDesc) {
+                console.log("handle defineProperty");
+                return true;
+            }
+        };
+        let target1 = {};
+        let proxy7 = new Proxy(target1, handler5);
+        proxy7.name = "Tom";
+        // handle defineProperty
+        target1;
+        // {name: "Tom"}
+
+        // defineProperty 返回值为false，添加属性操作无效
+        let handler6 = {
+            defineProperty: function(target1, propKey, propDesc) {
+                console.log("handle defineProperty");
+                return false;
+            }
+        };
+        let target2 = {};
+        let proxy8 = new Proxy(target2, handler6);
+        proxy8.name = "Jerry";
+        target2;
+        // {}
+
+
+        /* erty 操作
+        getOwnPropertyDescriptor(target, propKey)
+        用于拦截 Object.getOwnPropertyD() 返回值为属性描述对象或者 undefined。 */
+        let handler7 = {
+            getOwnPropertyDescriptor: function(target1, propKey) {
+                return Object.getOwnPropertyDescriptor(target1, propKey);
+            }
+        };
+        let target01 = {
+            name: "Tom"
+        };
+        let proxy9 = new Proxy(target01, handler7);
+        Object.getOwnPropertyDescriptor(proxy9, 'name');
+        // {value: "Tom", writable: true, enumerable: true, configurable: 
+        // true}
+
+
+        /* ptor 属性
+        getPrototypeOf(target)
+        主要用于拦截获取对象原型的操作。 包括以下操作： */
+        // -Object.prototype._proto_ 
+        // -Object.prototype.isPrototypeOf() 
+        // -Object.getPrototypeOf() 
+        // -Reflect.getPrototypeOf() 
+        // -instanceof
+        let exam4 = {};
+        let proxy10 = new Proxy({}, {
+            getPrototypeOf: function(target1) {
+                return exam4;
+            }
+        });
+        Object.getPrototypeOf(proxy10); // {}
+        /* 注意， 返回值必须是对象或者 null， 否则报错。 
+        另外， 如果目标对象不可扩展（ non - extensible）， 
+        getPrototypeOf 方法必须返回目标对象的原型对象。 */
+
+        let proxy11 = new Proxy({}, {
+            getPrototypeOf: function(target1) {
+                return true;
+            }
+        });
+        // Object.getPrototypeOf(proxy11);
+        // TypeError: 'getPrototypeOf' on proxy: trap returned neither object nor null
+
+
+        /* isExtensible(target)
+        用于拦截 Object.isExtensible 操作。
+        该方法只能返回布尔值， 否则返回值会被自动转为布尔值。 */
+        let proxy12 = new Proxy({}, {
+            isExtensible: function(target1) {
+                return true;
+            }
+        });
+        Object.isExtensible(proxy12); // true
+        // 注意： 它的返回值必须与目标对象的isExtensible属性保持一致， 否则会抛出错误。
+
+        let proxy13 = new Proxy({}, {
+            isExtensible: function(target1) {
+                return false;
+            }
+        });
+        // Object.isExtensible(proxy13)
+        // TypeError: 'isExtensible' on proxy: trap result does not reflect 
+        // extensibility of proxy target (which is 'true')
+
+
+        /* ownKeys(target)
+        用于拦截对象自身属性的读取操作。 主要包括以下操作： */
+        // -Object.getOwnPropertyNames() 
+        // -Object.getOwnPropertySymbols() 
+        // -Object.keys() 
+        // -or...in
+
+        /* 
+        方法返回的数组成员， 只能是字符串或 Symbol 值， 否则会报错。
+        若目标对象中含有不可配置的属性， 则必须将这些属性在结果中返回， 否则就会报错。
+        若目标对象不可扩展， 则必须全部返回且只能返回目标对象包含的所有属性， 不能包含不存在的属性， 否则也会报错。 
+        */
+        let proxy14 = new Proxy({
+            name: "Tom",
+            age: 24
+        }, {
+            ownKeys(target1) {
+                return ['name'];
+            }
+        });
+        Object.keys(proxy14);
+        // [ 'name' ]f返回结果中，三类属性会被过滤：
+        //          - 目标对象上没有的属性
+        //          - 属性名为 Symbol 值的属性
+        //          - 不可遍历的属性
+
+        let target3 = {
+            name: "Tom",
+            [Symbol.for('age')]: 24,
+        };
+        // 添加不可遍历属性 'gender'
+        Object.defineProperty(target3, 'gender', {
+            enumerable: false,
+            configurable: true,
+            writable: true,
+            value: 'male'
+        });
+        let handler8 = {
+            ownKeys(target3) {
+                return ['name', 'parent', Symbol.for('age'), 'gender'];
+            }
+        };
+        let proxy15 = new Proxy(target3, handler8);
+        Object.keys(proxy15);
+        // ['name']
+
+
+        /* 
+        preventExtensions(target)
+        拦截 Object.preventExtensions 操作。
+        该方法必须返回一个布尔值， 否则会自动转为布尔值。 
+        */
+        // 只有目标对象不可扩展时（即 Object.isExtensible(proxy) 为 false ），
+        // proxy.preventExtensions 才能返回 true ，否则会报错
+        var proxy16 = new Proxy({}, {
+            preventExtensions: function(target3) {
+                return true;
+            }
+        });
+        // 由于 proxy.preventExtensions 返回 true，此处也会返回 true，因此会报错
+        /* Object.preventExtensions(proxy16) */ // TypeError: 'preventExtensions' on proxy: trap returned truish but // the proxy target is extensible
+
+        // 解决方案
+        var proxy17 = new Proxy({}, {
+            preventExtensions: function(target3) {
+                // 返回前先调用 Object.preventExtensions
+                Object.preventExtensions(target3);
+                return true;
+            }
+        });
+        Object.preventExtensions(proxy17);
+        // Proxy {}
+
+
+        /* 
+        setPrototypeOf
+        主要用来拦截 Object.setPrototypeOf 方法。
+        返回值必须为布尔值， 否则会被自动转为布尔值。
+        若目标对象不可扩展， setPrototypeOf 方法不得改变目标对象的原型。 
+        */
+        let proto = {};
+        let proxy18 = new Proxy(function() {}, {
+            setPrototypeOf: function(target3, proto) {
+                console.log("setPrototypeOf");
+                return true;
+            }
+        });
+        Object.setPrototypeOf(proxy18, proto);
+        // setPrototypeOf
+
+
+        /* 
+        Proxy.revocable()
+        用于返回一个可取消的 Proxy 实例。 
+        */
+        let {
+            proxy19,
+            revoke
+        } = Proxy.revocable({}, {});
+        // proxy19.name = 'Tom';
+        revoke();
+        // proxy19.name;
+        // TypeError: Cannot perform 'get' on a proxy that has been revoked
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        // 数组模型的解构（ Array）
+        // 基本
+        let [a, b, c] = [1, 2, 3];
+        console.log(a);
+        console.log(b);
+        console.log(c);
+        // a = 1
+        // b = 2
+        // c = 3
+
+        // 可嵌套
+        let [a1, [
+            [b1], c1
+        ]] = [1, [
+            [2], 3
+        ]];
+        console.log(a1);
+        console.log(b1);
+        console.log(c1);
+        // a1 = 1
+        // b1 = 2
+        // c1 = 3
+
+        // 可忽略
+        let [a2, , b2] = [1, 2, 3];
+        console.log(a2);
+        console.log(b2);
+        // a2 = 1
+        // b2 = 3
+
+        // 不完全解构
+        let [a3 = 1, b3] = [];
+        console.log(a3);
+        console.log(b3);
+        // a3 = 1, b3 = undefined
+
+        // 剩余运算符
+        let [a4, ...b4] = [1, 2, 3];
+        console.log(a4);
+        console.log(b4);
+        //a4 = 1
+        //b4 = [2, 3]
+
+        // 字符串等
+        // 在数组的解构中， 解构的目标若为可遍历对象， 皆可进行解构赋值。 
+        // 可遍历对象即实现 Iterator 接口的数据。
+        let [a5, b5, c5, d5, e5] = 'hello';
+        console.log(a5);
+        console.log(b5);
+        console.log(c5);
+        console.log(d5);
+        console.log(e5);
+        // a5 = 'h'
+        // b5 = 'e'
+        // c5 = 'l'
+        // d5 = 'l'
+        // e5 = 'o'
+
+
+        // 解构默认值
+        let [a6 = 2] = [null];
+        console.log('a6:' + a6);
+        // a6 = 2
+        // 当解构模式有匹配结果， 且匹配结果是 undefined 时， 会触发默认值作为返回结果。
+
+        let [a7 = 3, b7 = a7] = [];
+        console.log(a7);
+        console.log(b7);
+        // a7 = 3, b7 = 3
+
+        let [a8 = 3, b8 = a8] = [1];
+        console.log(a8);
+        console.log(b8);
+        // a8 = 1, b8 = 1
+
+        let [a9 = 3, b9 = a9] = [1, 2];
+        console.log(a9);
+        console.log(b9);
+        // a9 = 1, b9 = 2
+
+        /* a 与 b 匹配结果为 undefined， 触发默认值： a = 3;b = a = 3
+        a 正常解构赋值， 匹配结果： a = 1， b 匹配结果 undefined， 触发默认值： b = a = 1
+        a 与 b 正常解构赋值， 匹配结果： a = 1， b = 2 */
+
+
+        // 对象模型的解构（ Object）
+        // 基本
+        let {
+            foo,
+            bar
+        } = {
+            foo: 'aaa',
+            bar: 'bbb'
+        };
+        console.log(foo);
+        console.log(bar);
+        // foo = 'aaa'
+        // bar = 'bbb'
+
+        let {
+            baz: fo
+        } = {
+            baz: 'ddd'
+        };
+        console.log(fo);
+        // fo = 'ddd'
+
+
+        // 可嵌套可忽略
+        let obj = {
+            p: ['hello', {
+                y: 'world'
+            }]
+        };
+        let {
+            p: [x, {
+                y
+            }]
+        } = obj;
+        console.log(x);
+        console.log(y);
+        // x = 'hello'
+        // y = 'world'
+
+        let obj1 = {
+            p: ['hello', {
+                y1: 'world'
+            }]
+        };
+        let {
+            p: [x1, {
+                yy
+            }]
+        } = obj1;
+        console.log(x1);
+        console.log(yy);
+        // x1 = 'hello'
+
+
+        // 不完全解构
+        let obj2 = {
+            p: [{
+                y2: 'world'
+            }]
+        };
+        let {
+            p: [{
+                y2
+            }, x2]
+        } = obj2;
+        console.log(x2);
+        console.log(y2);
+        // x2 = undefined
+        // y2 = 'world'
+
+
+        // 剩余运算符
+        let {
+            ax,
+            bx,
+            ...rest
+        } = {
+            ax: 10,
+            bx: 20,
+            cx: 30,
+            dx: 40
+        };
+        console.log(ax);
+        console.log(bx);
+        console.log(rest);
+        // ax = 10
+        // bx = 20
+        // rest = {c: 30, d: 40}
+
+
+        // 解构默认值
+        let {
+            ay = 10, by = 5
+        } = {
+            ay: 3
+        };
+        console.log(ay);
+        console.log(by);
+        // ay = 3; by = 5;
+        let {
+            az: aa = 10,
+            bz: bb = 5
+        } = {
+            az: 3
+        };
+        console.log(aa);
+        console.log(bb);
+        // aa = 3; bb = 5;
+    </script>
+</body>
+
+</html>

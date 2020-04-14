@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        // Set 中的特殊值
+        /*  Set 对象存储的值总是唯一的， 所以需要判断两个值是否恒等。 有几个特殊值需要特殊对待：
+         +0 与 - 0 在存储判断唯一性的时候是恒等的， 所以不重复；
+         undefined 与 undefined 是恒等的， 所以不重复；
+         NaN 与 NaN 是不恒等的， 但是在 Set 中只能存一个， 不重复。 */
+
+        // 代码
+        let mySet = new Set();
+
+        console.log(mySet.add(1)); // Set(1) {1}
+        console.log(mySet.add(5)); // Set(2) {1, 5}
+        console.log(mySet.add(5)); // Set(2) {1, 5} 这里体现了值的唯一性
+        console.log(mySet.add("some text"));
+        // Set(3) {1, 5, "some text"} 这里体现了类型的多样性
+        var o = {
+            a: 1,
+            b: 2
+        };
+        console.log(mySet.add(o));
+        console.log(mySet.add({
+            a: 1,
+            b: 2
+        }));
+        // Set(5) {1, 5, "some text", {…}, {…}} 
+        // 这里体现了对象之间引用不同不恒等，即使值相同，Set 也能存储
+
+
+        // 类型转换
+        // Array
+        // Array 转 Set
+        var mySet1 = new Set(["value1", "value2", "value3"]);
+        console.log(mySet1);
+        // 用...操作符，将 Set 转 Array
+        var myArray = [...mySet1];
+        // 用Array.from，将 Set 转 Array
+        var myArray1 = Array.from(mySet1);
+        console.log(myArray);
+        console.log(myArray1);
+
+        // String
+        // String 转 Set
+        var mySet2 = new Set('hello');
+        console.log(mySet2); // Set {'h', 'e', 'l', 'l', 'o'}
+        console.log(Array.from(mySet2));
+        // 注：Set 中 toString 方法是不能将 Set 转换成 String
+
+
+        // Set 对象作用
+        // 数组去重
+        var mySet3 = new Set([1, 2, 3, 4, 4]);
+        console.log([...mySet3]); // [1, 2, 3, 4]
+        console.log(...new Set([1, 2, 3, 4, 4, 5, 8, 9, 9]));
+
+        // 并集
+        var a = new Set([1, 2, 3]);
+        var b = new Set([4, 3, 2]);
+        var union = new Set([...a, ...b]); // {1, 2, 3, 4}
+        console.log(union);
+        var union1 = new Set([...b, ...a]);
+        console.log(union1);
+
+        // 交集
+        var a = new Set([1, 2, 3]);
+        var b = new Set([4, 3, 2]);
+        var intersect = new Set([...a].filter(x => b.has(x))); // {2, 3}
+        console.log(intersect);
+
+        // 差集
+        var a = new Set([1, 2, 3]);
+        var b = new Set([4, 3, 2]);
+        var difference = new Set([...b].filter(x => !a.has(x))); // {1}
+        console.log(difference);
+
+
+
+
+        // Set实例的属性和方法
+        /* 属性：
+        Set.prototype.constructor： 构造函数， 默认就是Set函数
+        Set.prototype.size： 返回实例的成员总数 */
+
+        /* 操作方法（ 方法的具体实现见： 我对JS集合的简单学习）：
+        add(value)： 添加一个值， 返回Set结构本身
+        delete(value)： 删除某个值， 返回布尔值
+        has(value)： 返回布尔值， 表示是否是成员
+        clear()： 清除所有成员， 无返回值 */
+        let s = new Set();
+        s.add(1).add(2).add(2); //链式写法
+        console.log(s);
+        console.log(s.size); //2
+        console.log(s.has(3)); //false
+        console.log(s.delete(2));
+        console.log(s.has(2)); //false 
+
+
+        /* 遍历方法
+        keys()： 返回键名的遍历器（ 什么是遍历器？ Iterator）
+        values()： 返回键值的遍历器
+        entries()： 返回键值对的遍历器
+        forEach()： 使用回调函数遍历每个成员
+        这里要注意Set的键名和键值是同一个值， 所以key() 和values() 行为是一致的。 */
+        let set = new Set(['red', 'green', 'no']);
+        for (let item of set.keys()) {
+            console.log(item); //red green no
+        }
+        for (let item of set.values()) {
+            console.log(item); //red green no
+        }
+        for (let item of set.entries()) {
+            console.log(item); //['red': 'red'] ['green': 'green'] ['no': 'no']
+        }
+
+        //对每个成员执行某种操作，参数依次为键值、键名、集合本身
+        new Set([1, 2, 3]).forEach((value, key) => console.log(value * 2)); //2 4 6
+
+
+        // 号外： 扩展运算符（...）内部使用for...of循环， 所以应该知道for of是干嘛的吧
+
+        // 数组的map() 和filter() 可用于Set
+        let set01 = new Set([1, 2, 3]);
+        set01 = new Set([...set01].map(x => x * 2));
+        console.log(set01); //set: {2, 4, 6}
+
+        let set02 = new Set([1, 2, 3, 4, 5]);
+        set02 = new Set([...set02].filter(x => (x % 2) == 0)); //set {2, 4}
+        console.log(set02);
+    </script>
+</body>
+
+</html>
